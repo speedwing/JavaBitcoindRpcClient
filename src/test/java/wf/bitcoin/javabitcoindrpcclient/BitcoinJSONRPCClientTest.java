@@ -1,12 +1,10 @@
 package wf.bitcoin.javabitcoindrpcclient;
 
-import org.junit.Before;
 import org.junit.Test;
 import wf.bitcoin.krotjson.JSON;
 
 import java.util.LinkedList;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -30,12 +28,12 @@ public class BitcoinJSONRPCClientTest {
         }
 
         @Override
-        public Object query(String method, Object... o) throws BitcoinRpcException {
+        public Object query(String method, Object... o) throws BitcoinRpcRuntimeException {
             if(method!=expectedMethod) {
-                throw new BitcoinRpcException("wrong method");
+                throw new BitcoinRpcRuntimeException("wrong method");
             }
             if(o.equals(expectedObject)){
-                throw new BitcoinRpcException("wrong object");
+                throw new BitcoinRpcRuntimeException("wrong object");
             }
             return JSON.parse(result);
         }

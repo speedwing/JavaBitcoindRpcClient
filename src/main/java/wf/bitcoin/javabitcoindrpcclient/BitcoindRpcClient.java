@@ -26,886 +26,842 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-/**
- *
- * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com Small modifications by
- * Alessandro Polverini polverini at gmail.com
- */
 public interface BitcoindRpcClient {
 
-  /* Missing methods:
-   getblocktemplate ( "jsonrequestobject" )
-   *getgenerate
-   *gethashespersec
-   *getwork ( "data" )
-   help ( "command" )
-   *listaddressgroupings
-   *listlockunspent
-   (DEPRECATED) listreceivedbyaccount ( minconf includeempty )
-   lockunspent unlock [{"txid":"txid","vout":n},...]
-   sendmany "fromaccount" {"address":amount,...} ( minconf "comment" )
-   (DEPRECATED) setaccount "bitcoinaddress" "account"
-   */
-  public static interface TxInput extends Serializable {
-
-    public String txid();
-
-    public int vout();
-
-    public String scriptPubKey();
-  }
-
-  public static class BasicTxInput implements TxInput {
-
-    public String txid;
-    public int vout;
-    public String scriptPubKey;
-
-    public BasicTxInput(String txid, int vout) {
-      this.txid = txid;
-      this.vout = vout;
-    }
-
-    public BasicTxInput(String txid, int vout, String scriptPubKey) {
-      this(txid, vout);
-      this.scriptPubKey = scriptPubKey;
-    }
-
-    @Override
-    public String txid() {
-      return txid;
-    }
-
-    @Override
-    public int vout() {
-      return vout;
-    }
-
-    @Override
-    public String scriptPubKey() {
-      return scriptPubKey;
-    }
-
-  }
-
-  public static class ExtendedTxInput extends BasicTxInput {
-
-    public String redeemScript;
-    public BigDecimal amount;
-
-    public ExtendedTxInput(String txid, int vout) {
-      super(txid, vout);
-    }
-
-    public ExtendedTxInput(String txid, int vout, String scriptPubKey) {
-      super(txid, vout, scriptPubKey);
-    }
-
-    public ExtendedTxInput(String txid, int vout, String scriptPubKey, String redeemScript, BigDecimal amount) {
-      super(txid, vout, scriptPubKey);
-      this.redeemScript = redeemScript;
-      this.amount = amount;
-    }
-
-    public String redeemScript() {
-      return redeemScript;
-    }
-
-    public BigDecimal amount() {
-      return amount;
-    }
-
-  }
-
-  public static interface TxOutput extends Serializable {
-
-    public String address();
-
-    public double amount();
-  }
-
-  public static class BasicTxOutput implements TxOutput {
-
-    public String address;
-    public double amount;
-
-    public BasicTxOutput(String address, double amount) {
-      this.address = address;
-      this.amount = amount;
-    }
-
-    @Override
-    public String address() {
-      return address;
-    }
-
-    @Override
-    public double amount() {
-      return amount;
-    }
-  }
-
-  /*
-   * Use BitcoinRawTxBuilder , which is more convenient
-   *
-   */
-  public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws BitcoinRpcException;
-
-  public String dumpPrivKey(String address) throws BitcoinRpcException;
-
-  public String getAccount(String address) throws BitcoinRpcException;
-
-  public String getAccountAddress(String address) throws BitcoinRpcException;
-
-  public List<String> getAddressesByAccount(String account) throws BitcoinRpcException;
-
-  /**
-   * @return returns the server's total available balance
-   * @throws BitcoinRpcException
-   */
-  public double getBalance() throws BitcoinRpcException;
-
-  /**
-   * @param account
-   * @return returns the balance in the account
-   * @throws BitcoinRpcException
-   */
-  public double getBalance(String account) throws BitcoinRpcException;
-
-  /**
-   * @param account
-   * @param minConf
-   * @return returns the balance in the account
-   * @throws BitcoinRpcException
-   */
-  public double getBalance(String account, int minConf) throws BitcoinRpcException;
-
-  /**
-   * @return infos about the bitcoind instance
-   * @throws BitcoinRpcException
-   */
-  public Info getInfo() throws BitcoinRpcException;
-
-  /**
-   *
-   * @return miningInfo about the bitcoind instance
-   * @throws BitcoinRpcException
-   */
-  public MiningInfo getMiningInfo() throws BitcoinRpcException;
-
-  public MultiSig createMultiSig(int nRequired, List<String> keys) throws BitcoinRpcException;
-
-  public NetworkInfo getNetworkInfo() throws BitcoinRpcException;
-
-  public static interface Info extends Serializable {
-
-    public long version();
-
-    public long protocolVersion();
-
-    public long walletVersion();
-
-    public double balance();
-
-    public int blocks();
-
-    public int timeOffset();
-
-    public int connections();
-
-    public String proxy();
-
-    public double difficulty();
-
-    public boolean testnet();
-
-    public long keyPoolOldest();
-
-    public long keyPoolSize();
-
-    public double payTxFee();
-
-    public double relayFee();
-
-    public String errors();
-  }
-
-  public static interface MiningInfo extends Serializable {
-
-    public int blocks();
-
-    public int currentBlockSize();
-
-    public int currentBlockWeight();
-
-    public int currentBlockTx();
-
-    public double difficulty();
-
-    public String errors();
-
-    public double networkHashps();
-
-    public int pooledTx();
-
-    public boolean testNet();
-
-    public String chain();
-  }
-
-  public static interface NetTotals extends Serializable {
-
-    public long totalBytesRecv();
-
-    public long totalBytesSent();
-
-    public long timeMillis();
-
-    public interface uploadTarget extends Serializable {
-
-      public long timeFrame();
-
-      public int target();
-
-      public boolean targetReached();
-
-      public boolean serveHistoricalBlocks();
-
-      public long bytesLeftInCycle();
-
-      public long timeLeftInCycle();
-    }
-
-    public uploadTarget uploadTarget();
-  }
-
-  public static interface BlockChainInfo extends Serializable {
-
-    public String chain();
-
-    public int blocks();
-
-    public String bestBlockHash();
-
-    public double difficulty();
-
-    public double verificationProgress();
-
-    public String chainWork();
-  }
-
-  public static interface DecodedScript extends Serializable {
-
-    public String asm();
-
-    public String hex();
-
-    public String type();
-
-    public int reqSigs();
-
-    public List<String> addresses();
-
-    public String p2sh();
-  }
-
-  public TxOutSetInfo getTxOutSetInfo();
-
-  public WalletInfo getWalletInfo();
-
-  public static interface WalletInfo extends Serializable {
-
-    public long walletVersion();
-
-    public BigDecimal balance();
-
-    public BigDecimal unconfirmedBalance();
-
-    public BigDecimal immatureBalance();
-
-    public long txCount();
-
-    public long keyPoolOldest();
-
-    public long keyPoolSize();
-
-    public long unlockedUntil();
-
-    public BigDecimal payTxFee();
-
-    public String hdMasterKeyId();
-  }
-
-  public static interface NetworkInfo extends Serializable {
-
-    public long version();
-
-    public String subversion();
-
-    public long protocolVersion();
-
-    public String localServices();
-
-    public boolean localRelay();
-
-    public long timeOffset();
-
-    public long connections();
-
-    public List<Network> networks();
-
-    public BigDecimal relayFee();
-
-    public List<String> localAddresses();
-
-    public String warnings();
-  }
-
-  public static interface Network extends Serializable {
-
-    public String name();
-
-    public boolean limited();
-
-    public boolean reachable();
-
-    public String proxy();
-
-    public boolean proxyRandomizeCredentials();
-  }
-
-  public static interface MultiSig extends Serializable {
-
-    public String address();
-
-    public String redeemScript();
-  }
-
-  public static interface NodeInfo extends Serializable {
-
-    public String addedNode();
-
-    public boolean connected();
-
-    public List<Address> addresses();
-
-  }
-
-  public static interface Address extends Serializable {
-
-    public String address();
-
-    public String connected();
-  }
-
-  public static interface TxOut extends Serializable {
-    public String bestBlock();
-
-    public long confirmations();
-
-    public BigDecimal value();
-
-    public String asm();
-
-    public String hex();
-
-    public long reqSigs();
-
-    public String type();
-
-    public List<String> addresses();
-
-    public long version();
-
-    public boolean coinBase();
-
-  }
-
-  public static interface Block extends Serializable {
-
-    public String hash();
-
-    public int confirmations();
-
-    public int size();
-
-    public int height();
-
-    public int version();
-
-    public String merkleRoot();
-
-    public List<String> tx();
-
-    public Date time();
-
-    public long nonce();
-
-    public String bits();
-
-    public double difficulty();
-
-    public String previousHash();
-
-    public String nextHash();
-
-    public String chainwork();
-
-    public Block previous() throws BitcoinRpcException;
-
-    public Block next() throws BitcoinRpcException;
-  }
-
-  public static interface TxOutSetInfo extends Serializable {
-
-    public long height();
-
-    public String bestBlock();
-
-    public long transactions();
-
-    public long txouts();
-
-    public long bytesSerialized();
-
-    public String hashSerialized();
-
-    public BigDecimal totalAmount();
-  }
-
-  public Block getBlock(int height) throws BitcoinRpcException;
-
-  public Block getBlock(String blockHash) throws BitcoinRpcException;
-
-  public String getBlockHash(int height) throws BitcoinRpcException;
-
-  public BlockChainInfo getBlockChainInfo() throws BitcoinRpcException;
-
-  public int getBlockCount() throws BitcoinRpcException;
-
-  public String getNewAddress() throws BitcoinRpcException;
-
-  public String getNewAddress(String account) throws BitcoinRpcException;
-
-  public List<String> getRawMemPool() throws BitcoinRpcException;
-
-  public String getBestBlockHash() throws BitcoinRpcException;
-
-  public String getRawTransactionHex(String txId) throws BitcoinRpcException;
-
-  public interface RawTransaction extends Serializable {
-
-    public String hex();
-
-    public String txId();
-
-    public int version();
-
-    public long lockTime();
-
-    public long size();
-
-    public long vsize();
-
-    public String hash();
-
-    /*
-     *
+    /* Missing methods:
+     getblocktemplate ( "jsonrequestobject" )
+     *getgenerate
+     *gethashespersec
+     *getwork ( "data" )
+     help ( "command" )
+     *listaddressgroupings
+     *listlockunspent
+     (DEPRECATED) listreceivedbyaccount ( minconf includeempty )
+     lockunspent unlock [{"txid":"txid","vout":n},...]
+     sendmany "fromaccount" {"address":amount,...} ( minconf "comment" )
+     (DEPRECATED) setaccount "bitcoinaddress" "account"
      */
-    public interface In extends TxInput, Serializable {
+    interface TxInput extends Serializable {
 
-      public Map<String, Object> scriptSig();
+        String txid();
 
-      public long sequence();
+        int vout();
 
-      public RawTransaction getTransaction();
+        String scriptPubKey();
+    }
 
-      public Out getTransactionOutput();
+    class BasicTxInput implements TxInput {
+
+        String txid;
+        int vout;
+        String scriptPubKey;
+
+        BasicTxInput(String txid, int vout) {
+            this.txid = txid;
+            this.vout = vout;
+        }
+
+        BasicTxInput(String txid, int vout, String scriptPubKey) {
+            this(txid, vout);
+            this.scriptPubKey = scriptPubKey;
+        }
+
+        @Override
+        public String txid() {
+            return txid;
+        }
+
+        @Override
+        public int vout() {
+            return vout;
+        }
+
+        @Override
+        public String scriptPubKey() {
+            return scriptPubKey;
+        }
+
+    }
+
+    class ExtendedTxInput extends BasicTxInput {
+
+        String redeemScript;
+        BigDecimal amount;
+
+        public ExtendedTxInput(String txid, int vout) {
+            super(txid, vout);
+        }
+
+        public ExtendedTxInput(String txid, int vout, String scriptPubKey) {
+            super(txid, vout, scriptPubKey);
+        }
+
+        public ExtendedTxInput(String txid, int vout, String scriptPubKey, String redeemScript, BigDecimal amount) {
+            super(txid, vout, scriptPubKey);
+            this.redeemScript = redeemScript;
+            this.amount = amount;
+        }
+
+        String redeemScript() {
+            return redeemScript;
+        }
+
+        BigDecimal amount() {
+            return amount;
+        }
+
+    }
+
+    interface TxOutput extends Serializable {
+
+        String address();
+
+        double amount();
+    }
+
+    class BasicTxOutput implements TxOutput {
+
+        String address;
+        double amount;
+
+        BasicTxOutput(String address, double amount) {
+            this.address = address;
+            this.amount = amount;
+        }
+
+        @Override
+        public String address() {
+            return address;
+        }
+
+        @Override
+        public double amount() {
+            return amount;
+        }
+    }
+
+    String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws BitcoinRpcRuntimeException;
+
+    String dumpPrivKey(String address) throws BitcoinRpcRuntimeException;
+
+    String getAccount(String address) throws BitcoinRpcRuntimeException;
+
+    String getAccountAddress(String address) throws BitcoinRpcRuntimeException;
+
+    List<String> getAddressesByAccount(String account) throws BitcoinRpcRuntimeException;
+
+    double getBalance() throws BitcoinRpcRuntimeException;
+
+    double getBalance(String account) throws BitcoinRpcRuntimeException;
+
+    double getBalance(String account, int minConf) throws BitcoinRpcRuntimeException;
+
+    Info getInfo() throws BitcoinRpcRuntimeException;
+
+    MiningInfo getMiningInfo() throws BitcoinRpcRuntimeException;
+
+    MultiSig createMultiSig(int nRequired, List<String> keys) throws BitcoinRpcRuntimeException;
+
+    NetworkInfo getNetworkInfo() throws BitcoinRpcRuntimeException;
+
+    interface Info extends Serializable {
+
+        long version();
+
+        long protocolVersion();
+
+        long walletVersion();
+
+        double balance();
+
+        int blocks();
+
+        int timeOffset();
+
+        int connections();
+
+        String proxy();
+
+        double difficulty();
+
+        boolean testnet();
+
+        long keyPoolOldest();
+
+        long keyPoolSize();
+
+        double payTxFee();
+
+        double relayFee();
+
+        String errors();
+    }
+
+    interface MiningInfo extends Serializable {
+
+        int blocks();
+
+        int currentBlockSize();
+
+        int currentBlockWeight();
+
+        int currentBlockTx();
+
+        double difficulty();
+
+        String errors();
+
+        double networkHashps();
+
+        int pooledTx();
+
+        boolean testNet();
+
+        String chain();
+    }
+
+    interface NetTotals extends Serializable {
+
+        long totalBytesRecv();
+
+        long totalBytesSent();
+
+        long timeMillis();
+
+        interface uploadTarget extends Serializable {
+
+            long timeFrame();
+
+            int target();
+
+            boolean targetReached();
+
+            boolean serveHistoricalBlocks();
+
+            long bytesLeftInCycle();
+
+            long timeLeftInCycle();
+        }
+
+        uploadTarget uploadTarget();
+    }
+
+    interface BlockChainInfo extends Serializable {
+
+        String chain();
+
+        int blocks();
+
+        String bestBlockHash();
+
+        double difficulty();
+
+        double verificationProgress();
+
+        String chainWork();
+    }
+
+    interface DecodedScript extends Serializable {
+
+        String asm();
+
+        String hex();
+
+        String type();
+
+        int reqSigs();
+
+        List<String> addresses();
+
+        String p2sh();
+    }
+
+    TxOutSetInfo getTxOutSetInfo();
+
+    WalletInfo getWalletInfo();
+
+    interface WalletInfo extends Serializable {
+
+        long walletVersion();
+
+        BigDecimal balance();
+
+        BigDecimal unconfirmedBalance();
+
+        BigDecimal immatureBalance();
+
+        long txCount();
+
+        long keyPoolOldest();
+
+        long keyPoolSize();
+
+        long unlockedUntil();
+
+        BigDecimal payTxFee();
+
+        String hdMasterKeyId();
+    }
+
+    interface NetworkInfo extends Serializable {
+
+        long version();
+
+        String subversion();
+
+        long protocolVersion();
+
+        String localServices();
+
+        boolean localRelay();
+
+        long timeOffset();
+
+        long connections();
+
+        List<Network> networks();
+
+        BigDecimal relayFee();
+
+        List<String> localAddresses();
+
+        String warnings();
+    }
+
+    interface Network extends Serializable {
+
+        String name();
+
+        boolean limited();
+
+        boolean reachable();
+
+        String proxy();
+
+        boolean proxyRandomizeCredentials();
+    }
+
+    interface MultiSig extends Serializable {
+
+        String address();
+
+        String redeemScript();
+    }
+
+    interface NodeInfo extends Serializable {
+
+        String addedNode();
+
+        boolean connected();
+
+        List<Address> addresses();
+
+    }
+
+    interface Address extends Serializable {
+
+        String address();
+
+        String connected();
+    }
+
+    interface TxOut extends Serializable {
+        String bestBlock();
+
+        long confirmations();
+
+        BigDecimal value();
+
+        String asm();
+
+        String hex();
+
+        long reqSigs();
+
+        String type();
+
+        List<String> addresses();
+
+        long version();
+
+        boolean coinBase();
+
+    }
+
+    interface Block extends Serializable {
+
+        String hash();
+
+        int confirmations();
+
+        int size();
+
+        int height();
+
+        int version();
+
+        String merkleRoot();
+
+        List<String> tx();
+
+        Date time();
+
+        long nonce();
+
+        String bits();
+
+        double difficulty();
+
+        String previousHash();
+
+        String nextHash();
+
+        String chainwork();
+
+        Block previous() throws BitcoinRpcRuntimeException;
+
+        Block next() throws BitcoinRpcRuntimeException;
+    }
+
+    interface TxOutSetInfo extends Serializable {
+
+        long height();
+
+        String bestBlock();
+
+        long transactions();
+
+        long txouts();
+
+        long bytesSerialized();
+
+        String hashSerialized();
+
+        BigDecimal totalAmount();
+    }
+
+    Block getBlock(int height) throws BitcoinRpcRuntimeException;
+
+    Block getBlock(String blockHash) throws BitcoinRpcRuntimeException;
+
+    String getBlockHash(int height) throws BitcoinRpcRuntimeException;
+
+    BlockChainInfo getBlockChainInfo() throws BitcoinRpcRuntimeException;
+
+    int getBlockCount() throws BitcoinRpcRuntimeException;
+
+    String getNewAddress() throws BitcoinRpcRuntimeException;
+
+    String getNewAddress(String account) throws BitcoinRpcRuntimeException;
+
+    List<String> getRawMemPool() throws BitcoinRpcRuntimeException;
+
+    String getBestBlockHash() throws BitcoinRpcRuntimeException;
+
+    String getRawTransactionHex(String txId) throws BitcoinRpcRuntimeException;
+
+    interface RawTransaction extends Serializable {
+
+        String hex();
+
+        String txId();
+
+        int version();
+
+        long lockTime();
+
+        long size();
+
+        long vsize();
+
+        String hash();
+
+        interface In extends TxInput, Serializable {
+
+            Map<String, Object> scriptSig();
+
+            long sequence();
+
+            RawTransaction getTransaction();
+
+            Out getTransactionOutput();
+        }
+
+        List<In> vIn(); // TODO : Create special interface instead of this
+
+        interface Out extends Serializable {
+
+            double value();
+
+            int n();
+
+            interface ScriptPubKey extends Serializable {
+
+                String asm();
+
+                String hex();
+
+                int reqSigs();
+
+                String type();
+
+                List<String> addresses();
+            }
+
+            ScriptPubKey scriptPubKey();
+
+            TxInput toInput();
+
+            RawTransaction transaction();
+        }
+
+        List<Out> vOut(); // TODO : Create special interface instead of this
+
+        String blockHash();
+
+        int confirmations();
+
+        Date time();
+
+        Date blocktime();
+    }
+
+    RawTransaction getRawTransaction(String txId) throws BitcoinRpcRuntimeException;
+
+    double getReceivedByAddress(String address) throws BitcoinRpcRuntimeException;
+
+    /**
+     * Returns the total amount received by &lt;bitcoinaddress&gt; in transactions
+     * with at least [minconf] confirmations. While some might consider this
+     * obvious, value reported by this only considers *receiving* transactions. It
+     * does not check payments that have been made *from* this address. In other
+     * words, this is not "getaddressbalance". Works only for addresses in the
+     * local wallet, external addresses will always show 0.
+     *
+     * @param address a
+     * @param minConf a
+     * @return the total amount received by &lt;bitcoinaddress&gt;
+     */
+    double getReceivedByAddress(String address, int minConf) throws BitcoinRpcRuntimeException;
+
+    void importPrivKey(String bitcoinPrivKey) throws BitcoinRpcRuntimeException;
+
+    void importPrivKey(String bitcoinPrivKey, String label) throws BitcoinRpcRuntimeException;
+
+    void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws BitcoinRpcRuntimeException;
+
+    Object importAddress(String address, String label, boolean rescan) throws BitcoinRpcRuntimeException;
+
+    /**
+     * listaccounts [minconf=1]
+     *
+     * @return Map that has account names as keys, account balances as values
+     * @throws BitcoinRpcRuntimeException a
+     */
+    Map<String, Number> listAccounts() throws BitcoinRpcRuntimeException;
+
+    Map<String, Number> listAccounts(int minConf) throws BitcoinRpcRuntimeException;
+
+    static interface ReceivedAddress extends Serializable {
+
+        String address();
+
+        String account();
+
+        double amount();
+
+        int confirmations();
+    }
+
+    List<ReceivedAddress> listReceivedByAddress() throws BitcoinRpcRuntimeException;
+
+    List<ReceivedAddress> listReceivedByAddress(int minConf) throws BitcoinRpcRuntimeException;
+
+    List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws BitcoinRpcRuntimeException;
+
+    /**
+     * returned by listsinceblock and listtransactions
+     */
+    static interface Transaction extends Serializable {
+
+        String account();
+
+        String address();
+
+        String category();
+
+        double amount();
+
+        double fee();
+
+        int confirmations();
+
+        String blockHash();
+
+        int blockIndex();
+
+        Date blockTime();
+
+        String txId();
+
+        Date time();
+
+        Date timeReceived();
+
+        String comment();
+
+        String commentTo();
+
+        RawTransaction raw();
+    }
+
+    static interface TransactionsSinceBlock extends Serializable {
+
+        List<Transaction> transactions();
+
+        String lastBlock();
+    }
+
+    TransactionsSinceBlock listSinceBlock() throws BitcoinRpcRuntimeException;
+
+    TransactionsSinceBlock listSinceBlock(String blockHash) throws BitcoinRpcRuntimeException;
+
+    TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws BitcoinRpcRuntimeException;
+
+    List<Transaction> listTransactions() throws BitcoinRpcRuntimeException;
+
+    List<Transaction> listTransactions(String account) throws BitcoinRpcRuntimeException;
+
+    List<Transaction> listTransactions(String account, int count) throws BitcoinRpcRuntimeException;
+
+    List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcRuntimeException;
+
+    interface Unspent extends TxInput, TxOutput, Serializable {
+
+        @Override
+        String txid();
+
+        @Override
+        int vout();
+
+        @Override
+        String address();
+
+        String account();
+
+        String scriptPubKey();
+
+        @Override
+        double amount();
+
+        int confirmations();
+    }
+
+    List<Unspent> listUnspent() throws BitcoinRpcRuntimeException;
+
+    List<Unspent> listUnspent(int minConf) throws BitcoinRpcRuntimeException;
+
+    List<Unspent> listUnspent(int minConf, int maxConf) throws BitcoinRpcRuntimeException;
+
+    List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinRpcRuntimeException;
+
+    String move(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcRuntimeException;
+
+    String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcRuntimeException;
+
+    String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcRuntimeException;
+
+    String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcRuntimeException;
+
+    String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcRuntimeException;
+
+    String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcRuntimeException;
+
+    /**
+     * Will send the given amount to the given address, ensuring the account has a
+     * valid balance using minConf confirmations.
+     *
+     * @param fromAccount      s
+     * @param toBitcoinAddress s
+     * @param amount           is a real and is rounded to 8 decimal places
+     * @param minConf          s
+     * @param comment          s
+     * @param commentTo        sn
+     * @return the transaction ID if successful
+     * @throws BitcoinRpcRuntimeException a
+     */
+    String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws BitcoinRpcRuntimeException;
+
+    String sendRawTransaction(String hex) throws BitcoinRpcRuntimeException;
+
+    String sendToAddress(String toAddress, double amount) throws BitcoinRpcRuntimeException;
+
+    String sendToAddress(String toAddress, double amount, String comment) throws BitcoinRpcRuntimeException;
+
+    /**
+     * @param toAddress a
+     * @param amount    is a real and is rounded to 8 decimal places
+     * @param comment   a
+     * @param commentTo a
+     * @return the transaction ID &lt;txid&gt; if successful
+     * @throws BitcoinRpcRuntimeException a
+     */
+    String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcRuntimeException;
+
+    String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws BitcoinRpcRuntimeException;
+
+    static interface AddressValidationResult extends Serializable {
+
+        boolean isValid();
+
+        String address();
+
+        boolean isMine();
+
+        boolean isScript();
+
+        String pubKey();
+
+        boolean isCompressed();
+
+        String account();
     }
 
     /**
-     * This method should be replaced someday
-     *
-     * @return the list of inputs
+     * @param doGenerate a boolean indicating if blocks must be generated with the
+     *                   cpu
+     * @throws BitcoinRPCException a
      */
-    public List<In> vIn(); // TODO : Create special interface instead of this
-
-    public interface Out extends Serializable {
-
-      public double value();
-
-      public int n();
-
-      public interface ScriptPubKey extends Serializable {
-
-        public String asm();
-
-        public String hex();
-
-        public int reqSigs();
-
-        public String type();
-
-        public List<String> addresses();
-      }
-
-      public ScriptPubKey scriptPubKey();
-
-      public TxInput toInput();
-
-      public RawTransaction transaction();
-    }
+    void setGenerate(boolean doGenerate) throws BitcoinRPCException;
 
     /**
-     * This method should be replaced someday
+     * Used in regtest mode to generate an arbitrary number of blocks
+     *
+     * @param numBlocks a boolean indicating if blocks must be generated with the
+     *                  cpu
+     * @return the list of hashes of the generated blocks
+     * @throws BitcoinRPCException a
      */
-    public List<Out> vOut(); // TODO : Create special interface instead of this
+    List<String> generate(int numBlocks) throws BitcoinRPCException;
 
-    public String blockHash();
+    AddressValidationResult validateAddress(String address) throws BitcoinRpcRuntimeException;
 
-    public int confirmations();
+    double getEstimateFee(int nBlocks) throws BitcoinRpcRuntimeException;
 
-    public Date time();
+    double getEstimatePriority(int nBlocks) throws BitcoinRpcRuntimeException;
 
-    public Date blocktime();
-  }
+    /**
+     * In regtest mode, invalidates a block to create an orphan chain
+     *
+     * @param hash a
+     * @throws BitcoinRpcRuntimeException a
+     */
+    void invalidateBlock(String hash) throws BitcoinRpcRuntimeException;
 
-  public RawTransaction getRawTransaction(String txId) throws BitcoinRpcException;
+    /**
+     * In regtest mode, undo the invalidation of a block, possibly making it on
+     * the top of the chain
+     *
+     * @param hash a
+     * @throws BitcoinRpcRuntimeException a
+     */
+    void reconsiderBlock(String hash) throws BitcoinRpcRuntimeException;
 
-  public double getReceivedByAddress(String address) throws BitcoinRpcException;
+    static interface PeerInfoResult extends Serializable {
 
-  /**
-   * Returns the total amount received by &lt;bitcoinaddress&gt; in transactions
-   * with at least [minconf] confirmations. While some might consider this
-   * obvious, value reported by this only considers *receiving* transactions. It
-   * does not check payments that have been made *from* this address. In other
-   * words, this is not "getaddressbalance". Works only for addresses in the
-   * local wallet, external addresses will always show 0.
-   *
-   * @param address
-   * @param minConf
-   * @return the total amount received by &lt;bitcoinaddress&gt;
-   */
-  public double getReceivedByAddress(String address, int minConf) throws BitcoinRpcException;
+        long getId();
 
-  public void importPrivKey(String bitcoinPrivKey) throws BitcoinRpcException;
+        String getAddr();
 
-  public void importPrivKey(String bitcoinPrivKey, String label) throws BitcoinRpcException;
+        String getAddrLocal();
 
-  public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws BitcoinRpcException;
+        String getServices();
 
-  Object importAddress(String address, String label, boolean rescan) throws BitcoinRpcException;
+        long getLastSend();
 
-  /**
-   * listaccounts [minconf=1]
-   *
-   * @return Map that has account names as keys, account balances as values
-   * @throws BitcoinRpcException
-   */
-  public Map<String, Number> listAccounts() throws BitcoinRpcException;
+        long getLastRecv();
 
-  public Map<String, Number> listAccounts(int minConf) throws BitcoinRpcException;
+        long getBytesSent();
 
-  public static interface ReceivedAddress extends Serializable {
+        long getBytesRecv();
 
-    public String address();
+        long getConnTime();
 
-    public String account();
+        int getTimeOffset();
 
-    public double amount();
+        double getPingTime();
 
-    public int confirmations();
-  }
+        long getVersion();
 
-  public List<ReceivedAddress> listReceivedByAddress() throws BitcoinRpcException;
+        String getSubVer();
 
-  public List<ReceivedAddress> listReceivedByAddress(int minConf) throws BitcoinRpcException;
+        boolean isInbound();
 
-  public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws BitcoinRpcException;
+        int getStartingHeight();
 
-  /**
-   * returned by listsinceblock and listtransactions
-   */
-  public static interface Transaction extends Serializable {
+        long getBanScore();
 
-    public String account();
+        int getSyncedHeaders();
 
-    public String address();
+        int getSyncedBlocks();
 
-    public String category();
+        boolean isWhiteListed();
+    }
 
-    public double amount();
+    List<PeerInfoResult> getPeerInfo();
 
-    public double fee();
+    void stop();
 
-    public int confirmations();
+    String getRawChangeAddress();
 
-    public String blockHash();
+    long getConnectionCount();
 
-    public int blockIndex();
+    double getUnconfirmedBalance();
 
-    public Date blockTime();
+    double getDifficulty();
 
-    public String txId();
+    void ping();
 
-    public Date time();
+    DecodedScript decodeScript(String hex);
 
-    public Date timeReceived();
+    NetTotals getNetTotals();
 
-    public String comment();
+    boolean getGenerate();
 
-    public String commentTo();
+    double getNetworkHashPs();
 
-    public RawTransaction raw();
-  }
+    boolean setTxFee(BigDecimal amount);
 
-  public static interface TransactionsSinceBlock extends Serializable {
+    void addNode(String node, String command);
 
-    public List<Transaction> transactions();
+    void backupWallet(String destination);
 
-    public String lastBlock();
-  }
+    String signMessage(String bitcoinAdress, String message);
 
-  public TransactionsSinceBlock listSinceBlock() throws BitcoinRpcException;
+    void dumpWallet(String filename);
 
-  public TransactionsSinceBlock listSinceBlock(String blockHash) throws BitcoinRpcException;
+    void importWallet(String filename);
 
-  public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws BitcoinRpcException;
+    void keyPoolRefill();
 
-  public List<Transaction> listTransactions() throws BitcoinRpcException;
+    BigDecimal getReceivedByAccount(String account);
 
-  public List<Transaction> listTransactions(String account) throws BitcoinRpcException;
+    void encryptWallet(String passPhrase);
 
-  public List<Transaction> listTransactions(String account, int count) throws BitcoinRpcException;
+    void walletPassPhrase(String passPhrase, long timeOut);
 
-  public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcException;
+    boolean verifyMessage(String bitcoinAddress, String signature, String message);
 
-  public interface Unspent extends TxInput, TxOutput, Serializable {
+    String addMultiSigAddress(int nRequired, List<String> keyObject);
 
-    @Override
-    public String txid();
+    String addMultiSigAddress(int nRequired, List<String> keyObject, String account);
 
-    @Override
-    public int vout();
+    boolean verifyChain();
 
-    @Override
-    public String address();
+    List<NodeInfo> getAddedNodeInfo(boolean dummy, String node);
 
-    public String account();
+    void submitBlock(String hexData);
 
-    public String scriptPubKey();
-
-    @Override
-    public double amount();
-
-    public int confirmations();
-  }
-
-  public List<Unspent> listUnspent() throws BitcoinRpcException;
-
-  public List<Unspent> listUnspent(int minConf) throws BitcoinRpcException;
-
-  public List<Unspent> listUnspent(int minConf, int maxConf) throws BitcoinRpcException;
-
-  public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinRpcException;
-
-  public String move(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
-
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
-
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException;
-
-  /**
-   * Will send the given amount to the given address, ensuring the account has a
-   * valid balance using minConf confirmations.
-   *
-   * @param fromAccount
-   * @param toBitcoinAddress
-   * @param amount is a real and is rounded to 8 decimal places
-   * @param minConf
-   * @param comment
-   * @param commentTo
-   * @return the transaction ID if successful
-   * @throws BitcoinRpcException
-   */
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws BitcoinRpcException;
-
-  public String sendRawTransaction(String hex) throws BitcoinRpcException;
-
-  public String sendToAddress(String toAddress, double amount) throws BitcoinRpcException;
-
-  public String sendToAddress(String toAddress, double amount, String comment) throws BitcoinRpcException;
-
-  /**
-   * @param toAddress
-   * @param amount is a real and is rounded to 8 decimal places
-   * @param comment
-   * @param commentTo
-   * @return the transaction ID &lt;txid&gt; if successful
-   * @throws BitcoinRpcException
-   */
-  public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
-
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws BitcoinRpcException;
-
-  public static interface AddressValidationResult extends Serializable {
-
-    public boolean isValid();
-
-    public String address();
-
-    public boolean isMine();
-
-    public boolean isScript();
-
-    public String pubKey();
-
-    public boolean isCompressed();
-
-    public String account();
-  }
-
-  /**
-   * @param doGenerate a boolean indicating if blocks must be generated with the
-   * cpu
-   * @throws BitcoinRPCException
-   */
-  public void setGenerate(boolean doGenerate) throws BitcoinRPCException;
-
-  /**
-   * Used in regtest mode to generate an arbitrary number of blocks
-   *
-   * @param numBlocks a boolean indicating if blocks must be generated with the
-   * cpu
-   * @return the list of hashes of the generated blocks
-   * @throws BitcoinRPCException
-   */
-  public List<String> generate(int numBlocks) throws BitcoinRPCException;
-
-  public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
-
-  public double getEstimateFee(int nBlocks) throws BitcoinRpcException;
-
-  public double getEstimatePriority(int nBlocks) throws BitcoinRpcException;
-
-  /**
-   * In regtest mode, invalidates a block to create an orphan chain
-   *
-   * @param hash
-   * @throws BitcoinRpcException
-   */
-  public void invalidateBlock(String hash) throws BitcoinRpcException;
-
-  /**
-   * In regtest mode, undo the invalidation of a block, possibly making it on
-   * the top of the chain
-   *
-   * @param hash
-   * @throws BitcoinRpcException
-   */
-  public void reconsiderBlock(String hash) throws BitcoinRpcException;
-
-  public static interface PeerInfoResult extends Serializable {
-
-    long getId();
-
-    String getAddr();
-
-    String getAddrLocal();
-
-    String getServices();
-
-    long getLastSend();
-
-    long getLastRecv();
-
-    long getBytesSent();
-
-    long getBytesRecv();
-
-    long getConnTime();
-
-    int getTimeOffset();
-
-    double getPingTime();
-
-    long getVersion();
-
-    String getSubVer();
-
-    boolean isInbound();
-
-    int getStartingHeight();
-
-    long getBanScore();
-
-    int getSyncedHeaders();
-
-    int getSyncedBlocks();
-
-    boolean isWhiteListed();
-  }
-
-  List<PeerInfoResult> getPeerInfo();
-
-  void stop();
-
-  String getRawChangeAddress();
-
-  long getConnectionCount();
-
-  double getUnconfirmedBalance();
-
-  double getDifficulty();
-
-  void ping();
-
-  DecodedScript decodeScript(String hex);
-
-  NetTotals getNetTotals();
-
-  boolean getGenerate();
-
-  double getNetworkHashPs();
-
-  boolean setTxFee(BigDecimal amount);
-
-  void addNode(String node, String command);
-
-  void backupWallet(String destination);
-
-  String signMessage(String bitcoinAdress, String message);
-
-  void dumpWallet(String filename);
-
-  void importWallet(String filename);
-
-  void keyPoolRefill();
-
-  BigDecimal getReceivedByAccount(String account);
-
-  void encryptWallet(String passPhrase);
-
-  void walletPassPhrase(String passPhrase, long timeOut);
-
-  boolean verifyMessage(String bitcoinAddress, String signature, String message);
-
-  String addMultiSigAddress(int nRequired, List<String> keyObject);
-
-  String addMultiSigAddress(int nRequired, List<String> keyObject, String account);
-
-  boolean verifyChain();
-
-  List<NodeInfo> getAddedNodeInfo(boolean dummy, String node);
-
-  void submitBlock(String hexData);
-
-  TxOut getTxOut(String txId, long vout);
+    TxOut getTxOut(String txId, long vout);
 
 }

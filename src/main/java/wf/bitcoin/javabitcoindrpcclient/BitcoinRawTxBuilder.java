@@ -68,11 +68,11 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  public BitcoinRawTxBuilder in(double value) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder in(double value) throws BitcoinRpcRuntimeException {
     return in(value, 6);
   }
 
-  public BitcoinRawTxBuilder in(double value, int minConf) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder in(double value, int minConf) throws BitcoinRpcRuntimeException {
     List<BitcoindRpcClient.Unspent> unspent = bitcoin.listUnspent(minConf);
     double v = value;
     for (BitcoindRpcClient.Unspent o : unspent) {
@@ -84,13 +84,13 @@ public class BitcoinRawTxBuilder {
         break;
     }
     if (v > 0)
-      throw new BitcoinRpcException("Not enough bitcoins (" + v + "/" + value + ")");
+      throw new BitcoinRpcRuntimeException("Not enough bitcoins (" + v + "/" + value + ")");
     return this;
   }
 
   private HashMap<String, BitcoindRpcClient.RawTransaction> txCache = new HashMap<>();
 
-  private BitcoindRpcClient.RawTransaction tx(String txId) throws BitcoinRpcException {
+  private BitcoindRpcClient.RawTransaction tx(String txId) throws BitcoinRpcRuntimeException {
     BitcoindRpcClient.RawTransaction tx = txCache.get(txId);
     if (tx != null)
       return tx;
@@ -99,11 +99,11 @@ public class BitcoinRawTxBuilder {
     return tx;
   }
 
-  public BitcoinRawTxBuilder outChange(String address) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder outChange(String address) throws BitcoinRpcRuntimeException {
     return outChange(address, 0d);
   }
 
-  public BitcoinRawTxBuilder outChange(String address, double fee) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder outChange(String address, double fee) throws BitcoinRpcRuntimeException {
     double is = 0d;
     for (BitcoindRpcClient.TxInput i : inputs)
       is = BitcoinUtil.normalizeAmount(is + tx(i.txid()).vOut().get(i.vout()).value());
@@ -115,15 +115,15 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  public String create() throws BitcoinRpcException {
+  public String create() throws BitcoinRpcRuntimeException {
     return bitcoin.createRawTransaction(new ArrayList<>(inputs), outputs);
   }
 
-  public String sign() throws BitcoinRpcException {
+  public String sign() throws BitcoinRpcRuntimeException {
     return bitcoin.signRawTransaction(create(), null, null);
   }
 
-  public String send() throws BitcoinRpcException {
+  public String send() throws BitcoinRpcRuntimeException {
     return bitcoin.sendRawTransaction(sign());
   }
 

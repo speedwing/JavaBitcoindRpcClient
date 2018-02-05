@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BitcoinAcceptor implements Runnable {
-    
+
     private static final Logger logger = Logger.getLogger(BitcoinAcceptor.class.getCanonicalName());
 
     public final BitcoindRpcClient bitcoin;
@@ -38,7 +38,7 @@ public class BitcoinAcceptor implements Runnable {
         this.lastBlock = lastBlock;
         this.monitorDepth = monitorDepth;
     }
-    
+
     public BitcoinAcceptor(BitcoindRpcClient bitcoin) {
         this(bitcoin, null, 6);
     }
@@ -53,7 +53,7 @@ public class BitcoinAcceptor implements Runnable {
         listeners.add(listener);
     }
 
-    public String getAccountAddress(String account) throws BitcoinRpcException {
+    public String getAccountAddress(String account) throws BitcoinRpcRuntimeException {
         List<String> a = bitcoin.getAddressesByAccount(account);
         if (a.isEmpty())
             return bitcoin.getNewAddress(account);
@@ -64,7 +64,7 @@ public class BitcoinAcceptor implements Runnable {
         return lastBlock;
     }
 
-    public synchronized void setLastBlock(String lastBlock) throws BitcoinRpcException {
+    public synchronized void setLastBlock(String lastBlock) throws BitcoinRpcRuntimeException {
         if (this.lastBlock != null)
             throw new IllegalStateException("lastBlock already set");
         this.lastBlock = lastBlock;
@@ -85,15 +85,15 @@ public class BitcoinAcceptor implements Runnable {
 
     private HashSet<String> seen = new HashSet<String>();
 
-    private void updateMonitorBlock() throws BitcoinRpcException {
+    private void updateMonitorBlock() throws BitcoinRpcRuntimeException {
         monitorBlock = lastBlock;
-        for(int i = 0; i < monitorDepth && monitorBlock != null; i++) {
+        for (int i = 0; i < monitorDepth && monitorBlock != null; i++) {
             BitcoindRpcClient.Block b = bitcoin.getBlock(monitorBlock);
             monitorBlock = b == null ? null : b.previousHash();
         }
     }
 
-    public synchronized void checkPayments() throws BitcoinRpcException {
+    public synchronized void checkPayments() throws BitcoinRpcRuntimeException {
         BitcoindRpcClient.TransactionsSinceBlock t = monitorBlock == null ? bitcoin.listSinceBlock() : bitcoin.listSinceBlock(monitorBlock);
         for (BitcoindRpcClient.Transaction transaction : t.transactions()) {
             if ("receive".equals(transaction.category())) {
@@ -123,11 +123,11 @@ public class BitcoinAcceptor implements Runnable {
     }
 
     private boolean stop = false;
-    
+
     public void stopAccepting() {
         stop = true;
     }
-    
+
     private long checkInterval = 5000;
 
     /**
@@ -152,12 +152,12 @@ public class BitcoinAcceptor implements Runnable {
     public void run() {
         stop = false;
         long nextCheck = 0;
-        while(!(Thread.interrupted() || stop)) {
+        while (!(Thread.interrupted() || stop)) {
             if (nextCheck <= System.currentTimeMillis())
                 try {
                     nextCheck = System.currentTimeMillis() + checkInterval;
                     checkPayments();
-                } catch (BitcoinRpcException ex) {
+                } catch (BitcoinRpcRuntimeException ex) {
                     Logger.getLogger(BitcoinAcceptor.class.getName()).log(Level.SEVERE, null, ex);
                 }
             else
@@ -177,7 +177,7 @@ public class BitcoinAcceptor implements Runnable {
 //            public void block(String blockHash) {
 //                try {
 //                    System.out.println("new block: " + blockHash + "; date: " + bitcoin.getBlock(blockHash).time());
-//                } catch (BitcoinRpcException ex) {
+//                } catch (BitcoinRpcRuntimeException ex) {
 //                    logger.log(Level.SEVERE, null, ex);
 //                }
 //            }
