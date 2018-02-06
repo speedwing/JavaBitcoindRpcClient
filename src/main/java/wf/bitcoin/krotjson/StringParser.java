@@ -19,16 +19,16 @@
 package wf.bitcoin.krotjson;
 
 /**
- *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
 public class StringParser {
 
+    private int index;
+
     private String string;
-    int index;
-    
-    public int length(){
-    	return string.length()-index;
+
+    public int length() {
+        return string.length() - index;
     }
 
     public StringParser(String string) {
@@ -37,7 +37,7 @@ public class StringParser {
     }
 
     public void forward(int chars) {
-    	index += chars;
+        index += chars;
     }
 
     public char poll() {
@@ -47,18 +47,18 @@ public class StringParser {
     }
 
     public String poll(int length) {
-        String str = string.substring(index, length+index);
+        String str = string.substring(index, length + index);
         forward(length);
         return str;
     }
-    
-    private void commit(){
-    	string = string.substring(index);
-    	index = 0;
+
+    private void commit() {
+        string = string.substring(index);
+        index = 0;
     }
 
     public String pollBeforeSkipDelim(String s) {
-    	commit();
+        commit();
         int i = string.indexOf(s);
         if (i == -1)
             throw new RuntimeException("\"" + s + "\" not found in \"" + string + "\"");
@@ -72,25 +72,25 @@ public class StringParser {
     }
 
     public String peek(int length) {
-        return string.substring(index, length+index);
+        return string.substring(index, length + index);
     }
 
     public String trim() {
-    	commit();
+        commit();
         return string = string.trim();
     }
-    
+
     public char charAt(int pos) {
-		return string.charAt(pos+index);
-	}
+        return string.charAt(pos + index);
+    }
 
     public boolean isEmpty() {
-    	return (string.length()<=index);
+        return (string.length() <= index);
     }
 
     @Override
     public String toString() {
-    	commit();
+        commit();
         return string;
     }
 

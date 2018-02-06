@@ -2,7 +2,6 @@ package wf.bitcoin.javabitcoindrpcclient.model;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinRpcRuntimeException;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 import wf.bitcoin.javabitcoindrpcclient.MapWrapper;
 
 import java.io.Serializable;
@@ -175,7 +174,7 @@ public class RawTransactionImpl extends MapWrapper implements RawTransaction, Se
 
         @Override
         public TxInput toInput() {
-            return new BitcoindRpcClient.BasicTxInput(transaction().txId(), n());
+            return new BasicTxInput(transaction().txId(), n());
         }
 
         @Override

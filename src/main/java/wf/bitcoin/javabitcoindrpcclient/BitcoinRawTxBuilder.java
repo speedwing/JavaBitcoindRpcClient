@@ -4,10 +4,7 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
-import wf.bitcoin.javabitcoindrpcclient.model.RawTransaction;
-import wf.bitcoin.javabitcoindrpcclient.model.TxInput;
-import wf.bitcoin.javabitcoindrpcclient.model.TxOutput;
-import wf.bitcoin.javabitcoindrpcclient.model.Unspent;
+import wf.bitcoin.javabitcoindrpcclient.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +26,7 @@ public class BitcoinRawTxBuilder {
   public Set<TxInput> inputs = new LinkedHashSet<>();
   public List<TxOutput> outputs = new ArrayList<>();
 
-  private class Input extends BitcoindRpcClient.BasicTxInput {
+  private class Input extends BasicTxInput {
 
     public Input(String txid, int vout) {
       super(txid, vout);
@@ -62,14 +59,14 @@ public class BitcoinRawTxBuilder {
   }
 
   public BitcoinRawTxBuilder in(String txid, int vout) {
-    in(new BitcoindRpcClient.BasicTxInput(txid, vout));
+    in(new BasicTxInput(txid, vout));
     return this;
   }
 
   public BitcoinRawTxBuilder out(String address, double amount) {
     if (amount <= 0d)
       return this;
-    outputs.add(new BitcoindRpcClient.BasicTxOutput(address, amount));
+    outputs.add(new BasicTxOutput(address, amount));
     return this;
   }
 

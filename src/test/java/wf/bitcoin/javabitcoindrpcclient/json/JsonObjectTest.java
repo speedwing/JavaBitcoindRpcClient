@@ -1,12 +1,12 @@
 package wf.bitcoin.javabitcoindrpcclient.json;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 
+@Test
 public class JsonObjectTest {
 
-    @Test
     public void deserialise() throws Exception {
 
         JsonObject jsonObject = new JsonObject();
@@ -17,7 +17,6 @@ public class JsonObjectTest {
 
     }
 
-    @Test
     public void deserialise2() throws Exception {
 
         JsonObject jsonObject = new JsonObject();

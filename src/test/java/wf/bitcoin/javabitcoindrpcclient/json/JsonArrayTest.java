@@ -1,14 +1,12 @@
 package wf.bitcoin.javabitcoindrpcclient.json;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 
-import static org.junit.Assert.assertEquals;
-
+@Test
 public class JsonArrayTest {
 
-    @Test
     public void testBla() {
 
         JsonArray jsonValues = new JsonArray<>();
