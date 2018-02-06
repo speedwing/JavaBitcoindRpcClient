@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
-class MapWrapper {
+public class MapWrapper {
 
     public final Map m;
 

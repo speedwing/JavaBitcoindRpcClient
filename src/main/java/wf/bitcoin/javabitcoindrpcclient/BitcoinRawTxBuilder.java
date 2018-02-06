@@ -4,6 +4,11 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import wf.bitcoin.javabitcoindrpcclient.model.RawTransaction;
+import wf.bitcoin.javabitcoindrpcclient.model.TxInput;
+import wf.bitcoin.javabitcoindrpcclient.model.TxOutput;
+import wf.bitcoin.javabitcoindrpcclient.model.Unspent;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -21,8 +26,8 @@ public class BitcoinRawTxBuilder {
   public BitcoinRawTxBuilder(BitcoindRpcClient bitcoin) {
     this.bitcoin = bitcoin;
   }
-  public Set<BitcoindRpcClient.TxInput> inputs = new LinkedHashSet<>();
-  public List<BitcoindRpcClient.TxOutput> outputs = new ArrayList<>();
+  public Set<TxInput> inputs = new LinkedHashSet<>();
+  public List<TxOutput> outputs = new ArrayList<>();
 
   private class Input extends BitcoindRpcClient.BasicTxInput {
 
@@ -30,7 +35,7 @@ public class BitcoinRawTxBuilder {
       super(txid, vout);
     }
 
-    public Input(BitcoindRpcClient.TxInput copy) {
+    public Input(TxInput copy) {
       this(copy.txid(), copy.vout());
     }
 
@@ -43,15 +48,15 @@ public class BitcoinRawTxBuilder {
     public boolean equals(Object obj) {
       if (obj == null)
         return false;
-      if (!(obj instanceof BitcoindRpcClient.TxInput))
+      if (!(obj instanceof TxInput))
         return false;
-      BitcoindRpcClient.TxInput other = (BitcoindRpcClient.TxInput) obj;
+      TxInput other = (TxInput) obj;
       return vout == other.vout() && txid.equals(other.txid());
     }
 
   }
 
-  public BitcoinRawTxBuilder in(BitcoindRpcClient.TxInput in) {
+  public BitcoinRawTxBuilder in(TxInput in) {
     inputs.add(new Input(in.txid(), in.vout()));
     return this;
   }
@@ -73,9 +78,9 @@ public class BitcoinRawTxBuilder {
   }
 
   public BitcoinRawTxBuilder in(double value, int minConf) throws BitcoinRpcRuntimeException {
-    List<BitcoindRpcClient.Unspent> unspent = bitcoin.listUnspent(minConf);
+    List<Unspent> unspent = bitcoin.listUnspent(minConf);
     double v = value;
-    for (BitcoindRpcClient.Unspent o : unspent) {
+    for (Unspent o : unspent) {
       if (!inputs.contains(new Input(o))) {
         in(o);
         v = BitcoinUtil.normalizeAmount(v - o.amount());
@@ -88,10 +93,10 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  private HashMap<String, BitcoindRpcClient.RawTransaction> txCache = new HashMap<>();
+  private HashMap<String, RawTransaction> txCache = new HashMap<>();
 
-  private BitcoindRpcClient.RawTransaction tx(String txId) throws BitcoinRpcRuntimeException {
-    BitcoindRpcClient.RawTransaction tx = txCache.get(txId);
+  private RawTransaction tx(String txId) throws BitcoinRpcRuntimeException {
+    RawTransaction tx = txCache.get(txId);
     if (tx != null)
       return tx;
     tx = bitcoin.getRawTransaction(txId);
@@ -105,10 +110,10 @@ public class BitcoinRawTxBuilder {
 
   public BitcoinRawTxBuilder outChange(String address, double fee) throws BitcoinRpcRuntimeException {
     double is = 0d;
-    for (BitcoindRpcClient.TxInput i : inputs)
+    for (TxInput i : inputs)
       is = BitcoinUtil.normalizeAmount(is + tx(i.txid()).vOut().get(i.vout()).value());
     double os = fee;
-    for (BitcoindRpcClient.TxOutput o : outputs)
+    for (TxOutput o : outputs)
       os = BitcoinUtil.normalizeAmount(os + o.amount());
     if (os < is)
       out(address, BitcoinUtil.normalizeAmount(is - os));

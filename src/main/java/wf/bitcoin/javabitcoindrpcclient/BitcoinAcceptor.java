@@ -18,6 +18,10 @@
 
 package wf.bitcoin.javabitcoindrpcclient;
 
+import wf.bitcoin.javabitcoindrpcclient.model.Block;
+import wf.bitcoin.javabitcoindrpcclient.model.Transaction;
+import wf.bitcoin.javabitcoindrpcclient.model.TransactionsSinceBlock;
+
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -88,14 +92,14 @@ public class BitcoinAcceptor implements Runnable {
     private void updateMonitorBlock() throws BitcoinRpcRuntimeException {
         monitorBlock = lastBlock;
         for (int i = 0; i < monitorDepth && monitorBlock != null; i++) {
-            BitcoindRpcClient.Block b = bitcoin.getBlock(monitorBlock);
+            Block b = bitcoin.getBlock(monitorBlock);
             monitorBlock = b == null ? null : b.previousHash();
         }
     }
 
     public synchronized void checkPayments() throws BitcoinRpcRuntimeException {
-        BitcoindRpcClient.TransactionsSinceBlock t = monitorBlock == null ? bitcoin.listSinceBlock() : bitcoin.listSinceBlock(monitorBlock);
-        for (BitcoindRpcClient.Transaction transaction : t.transactions()) {
+        TransactionsSinceBlock t = monitorBlock == null ? bitcoin.listSinceBlock() : bitcoin.listSinceBlock(monitorBlock);
+        for (Transaction transaction : t.transactions()) {
             if ("receive".equals(transaction.category())) {
                 if (!seen.add(transaction.txId()))
                     continue;

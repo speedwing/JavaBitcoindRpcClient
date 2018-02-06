@@ -18,6 +18,8 @@
 
 package wf.bitcoin.javabitcoindrpcclient;
 
+import wf.bitcoin.javabitcoindrpcclient.model.Transaction;
+
 /**
  *
  * @author Mikhail Yevchenko: m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
@@ -25,6 +27,6 @@ package wf.bitcoin.javabitcoindrpcclient;
 public interface BitcoinPaymentListener {
 
     public void block(String blockHash);
-    public void transaction(BitcoindRpcClient.Transaction transaction);
+    public void transaction(Transaction transaction);
 
 }
